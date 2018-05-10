@@ -159,8 +159,22 @@ def get_dev_count_for_disk_bus(disk_bus):
     if disk_bus == "ide":
         return 4
     else:
-        return 26
+        return 1927634441
 
+def blk_device_name(prefix, index):
+    """Returns device unit name by index
+        i.e.
+            vda, vdb,..., vdzzz
+    """
+    base = ord('z') - ord('a') + 1
+    unitdevname = ""
+    while True:
+        p = chr(ord('a') + ( index % base ))
+        unitdevname = p + unitdevname
+        index = (index / base) - 1
+        if (index < 0):
+           break
+    return prefix + unitdevname
 
 def find_disk_dev_for_disk_bus(mapping, bus,
                                assigned_devices=None):
@@ -183,13 +197,13 @@ def find_disk_dev_for_disk_bus(mapping, bus,
         assigned_devices = []
 
     max_dev = get_dev_count_for_disk_bus(bus)
-    devs = range(max_dev)
-
-    for idx in devs:
-        disk_dev = dev_prefix + chr(ord('a') + idx)
+    idx = 0
+    while (idx < max_dev ):
+        disk_dev = blk_device_name(dev_prefix, idx)
         if not has_disk_dev(mapping, disk_dev):
             if disk_dev not in assigned_devices:
                 return disk_dev
+        idx = idx +1
 
     msg = _("No free disk device names for prefix '%s'") % dev_prefix
     raise exception.InternalError(msg)
